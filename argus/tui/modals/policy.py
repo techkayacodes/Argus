@@ -299,14 +299,12 @@ class PolicyModal(ModalScreen[Optional[dict[str, Any]]]):
         err = self.query_one("#config-error", Static)
 
         # Parse budget
-        clean_b = raw_budget.replace("$", "").replace("USD", "").strip()
+        from argus.tui.modals.validation import validate_budget_ceiling
+
         try:
-            b_val = float(clean_b)
-            if not (0.01 <= b_val <= 10.0):
-                err.update(f"[{_RED}]Budget must be between $0.01 and $10.00 USD[/]")
-                return
-        except ValueError:
-            err.update(f"[{_RED}]Invalid budget number format[/]")
+            b_val = validate_budget_ceiling(raw_budget)
+        except ValueError as exc:
+            err.update(f"[{_RED}]{exc}[/]")
             return
 
         # Parse attempts
