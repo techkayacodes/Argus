@@ -98,12 +98,12 @@ async def test_config_modal_budget_validation():
         await pilot.pause()
 
         inp = modal.query_one("#config-input", Input)
-        inp.value = "10.00"  # Exceeds max $5.00
+        inp.value = "10.01"  # Exceeds max $10.00
         await pilot.press("enter")
         await pilot.pause()
 
         err_text = str(modal.query_one("#config-error", Static).content)
-        assert "between $0.01 and $5.00" in err_text
+        assert "between $0.01 and $10.00" in err_text
 
 
 @pytest.mark.asyncio
