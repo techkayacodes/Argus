@@ -146,7 +146,9 @@ class ConfigModal(ModalScreen[Optional[Any]]):
                         yield Static("Budget ceiling", id="config-title", classes="modal-title")
                     yield Static(self._status_chip(), id="config-status-chip", classes="modal-status")
 
-                yield Static("Enter maximum USD spend limit ($0.01 – $5.00):", id="config-prompt")
+                from argus.tui.modals.validation import BUDGET_RANGE_TEXT
+
+                yield Static(f"Enter maximum USD spend limit ({BUDGET_RANGE_TEXT}):", id="config-prompt")
                 yield Input(value=str(self.current_config.budget_limit_usd), id="config-input")
 
             elif self.config_type == "attempts":
@@ -360,15 +362,14 @@ class ConfigModal(ModalScreen[Optional[Any]]):
                 self._dismiss_once({"type": "tier", "value": "argus/auto"})
 
         elif self.config_type == "budget":
+            from argus.tui.modals.validation import validate_budget_ceiling
+
             val_str = self.query_one("#config-input", Input).value.strip()
             try:
-                val = float(val_str)
-                if val <= 0.0 or val > 5.0:
-                    error_widget.update("Budget must be between $0.01 and $5.00.")
-                    return
+                val = validate_budget_ceiling(val_str)
                 self._dismiss_once({"type": "budget", "value": val})
-            except ValueError:
-                error_widget.update("Please enter a valid numeric dollar amount.")
+            except ValueError as exc:
+                error_widget.update(str(exc))
 
         elif self.config_type == "attempts":
             val_str = self.query_one("#config-input", Input).value.strip()
